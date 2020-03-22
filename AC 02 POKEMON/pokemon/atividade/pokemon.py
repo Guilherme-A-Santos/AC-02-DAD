@@ -127,7 +127,7 @@ def cor_do_pokemon(nome):
         cor = dic_poke["color"]["name"]
         dict_cor = {'brown':'marrom','yellow':'amarelo','blue':'azul',
                     'pink':'rosa','gray':'cinza','purple':'roxo','red':'vermelho',
-                    'white':'branco', 'green':'verde', "black": "preto"}    
+                    'white':'branco', 'green':'verde', "black": "preto"}
         return dict_cor[cor]
     except:
         raise PokemonNaoExisteException()
@@ -140,7 +140,22 @@ Todo pokémon pode pertencer a um ou a dois tipos diferentes. Retorne uma lista 
 Se houver dois tipos, a ordem não é importante.
 """
 def tipos_do_pokemon(nome):
-    pass
+    try:
+        nome = nome.lower()
+        req = requests.get(f"http://localhost:8000/api/v2/pokemon/{nome}/")
+        dic_poke = req.json()
+        lista_tipos = []
+        dic_types = {"normal": "normal", "fighting": "lutador", "flying": "voador",
+                    "poison": "veneno", "ground": "terra", "rock": "pedra",
+                    "bug": "inseto","ghost": "fantasma", "steel": "aço",
+                    "fire": "fogo", "water": "água","grass": "grama",
+                    "electric": "elétrico", "psychic": "psíquico", "ice": "gelo",
+                    "dragon": "dragão", "dark": "noturno", "fairy": "fada"}
+        for tipo in dic_poke["types"]:
+            lista_tipos.append(dic_types[tipo["type"]["name"]])
+        return lista_tipos
+    except:
+        raise PokemonNaoExisteException()
 
 """
 6. Dado o nome de um pokémon, liste de qual pokémon ele evoluiu.
@@ -148,8 +163,16 @@ Por exemplo, evolucao_anterior('venusaur') == 'ivysaur'
 Retorne None se o pokémon não tem evolução anterior. Por exemplo, evolucao_anterior('bulbasaur') == None
 """
 def evolucao_anterior(nome):
-    pass
-
+    try:
+        nome = nome.lower()
+        req = requests.get(f"http://localhost:8000/api/v2/pokemon-species/{nome}/")
+        dic_poke = req.json()
+        if dic_poke["evolves_from_species"] is None:
+            return None
+        else:
+            return dic_poke["evolves_from_species"]["name"]
+    except:
+        raise PokemonNaoExisteException()
 """
 7. Dado o nome de um pokémon, liste para quais pokémons ele pode evoluiur.
 Por exemplo, evolucoes_proximas('ivysaur') == ['venusaur'].
@@ -160,7 +183,11 @@ Note que esta função dá como resultado somente o próximo passo evoluitivo. A
 Se o pokémon não evolui, retorne uma lista vazia. Por exemplo, evolucoes_proximas('celebi') == []
 """
 def evolucoes_proximas(nome):
-    pass
+    req = requests.get(f"http://localhost:8000/api/v2/pokemon-species/{nome}/")
+    dic_poke = req.json()
+    dic_chain = requests.get(dic_poke["evolution_chain"]["url"]).json()
+    lista_evolves = [dic_chain["chain"]["evolves_to"][0]["species"]["name"]]
+    return lista_evolves
 
 """
 8. A medida que ganham pontos de experiência, os pokémons sobem de nível.
@@ -221,4 +248,4 @@ def excluir_pokemon(nome_treinador, apelido_pokemon):
 
 
 if __name__ == "__main__":
-    pprint(numero_do_pokemon("bulbasaur"))
+    print(evolucoes_proximas("poliwhirl"))
